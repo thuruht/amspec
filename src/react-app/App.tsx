@@ -24,6 +24,7 @@ function App() {
   const [guestMessage, setGuestMessage] = useState("");
   const [replyInputs, setReplyInputs] = useState<{[key: string]: {name: string, message: string}}>({});
   const [showReplies, setShowReplies] = useState<{[key: string]: boolean}>({});
+  const [showReplyForm, setShowReplyForm] = useState<{[key: string]: boolean}>({});
 
   useEffect(() => {
     fetch("/api/discussion")
@@ -95,6 +96,10 @@ function App() {
 
   const toggleReplies = (entryId: string) => {
     setShowReplies(prev => ({ ...prev, [entryId]: !prev[entryId] }));
+  };
+
+  const toggleReplyForm = (entryId: string) => {
+    setShowReplyForm(prev => ({ ...prev, [entryId]: !prev[entryId] }));
   };
 
   const formatDateTime = (timestamp: number) => {
@@ -212,53 +217,66 @@ function App() {
             {entries && entries.length > 0 && entries.map((entry) => (
               <div key={entry.id} className="neo-brutalist discussion-entry">
                 <div className="entry-header">
-                  <span className="entry-name">{entry.name}</span>
+                  <span className="entry-author">{entry.name}</span>
                   <span className="entry-datetime">{formatDateTime(entry.timestamp)}</span>
                 </div>
                 <div className="entry-message">{entry.message}</div>
                 
-                {entry.replies && entry.replies.length > 0 && (
+                <div className="entry-actions">
+                  {entry.replies && entry.replies.length > 0 && (
+                    <button 
+                      onClick={() => toggleReplies(entry.id)}
+                      className="show-replies-btn"
+                    >
+                      {showReplies[entry.id] ? 'Hide' : 'Show'} {entry.replies.length} {entry.replies.length === 1 ? 'reply' : 'replies'}
+                    </button>
+                  )}
                   <button 
-                    onClick={() => toggleReplies(entry.id)}
-                    className="show-replies-btn"
+                    onClick={() => toggleReplyForm(entry.id)}
+                    className="reply-toggle"
                   >
-                    {showReplies[entry.id] ? 'Hide' : 'Show'} {entry.replies.length} replies
+                    {showReplyForm[entry.id] ? 'Cancel' : 'Reply'}
                   </button>
-                )}
+                </div>
                 
                 <div className="reply-section">
-                  <div className="reply-form">
-                    <input
-                      type="text"
-                      placeholder="Your name"
-                      value={replyInputs[entry.id]?.name || ''}
-                      onChange={(e) => updateReplyInput(entry.id, 'name', e.target.value)}
-                      className="reply-input"
-                    />
-                    <input
-                      type="text"
-                      placeholder="Reply..."
-                      value={replyInputs[entry.id]?.message || ''}
-                      onChange={(e) => updateReplyInput(entry.id, 'message', e.target.value)}
-                      className="reply-input"
-                    />
-                    <button 
-                      onClick={() => addReply(entry.id)}
-                      className="reply-btn"
-                    >
-                      Reply
-                    </button>
-                  </div>
+                  {showReplyForm[entry.id] && (
+                    <div className="reply-form">
+                      <input
+                        type="text"
+                        placeholder="Your name"
+                        value={replyInputs[entry.id]?.name || ''}
+                        onChange={(e) => updateReplyInput(entry.id, 'name', e.target.value)}
+                        className="reply-input"
+                      />
+                      <input
+                        type="text"
+                        placeholder="Your message"
+                        value={replyInputs[entry.id]?.message || ''}
+                        onChange={(e) => updateReplyInput(entry.id, 'message', e.target.value)}
+                        className="reply-input reply-message"
+                      />
+                      <button 
+                        onClick={() => {
+                          addReply(entry.id);
+                          setShowReplyForm(prev => ({ ...prev, [entry.id]: false }));
+                        }}
+                        className="reply-btn"
+                      >
+                        Post Reply
+                      </button>
+                    </div>
+                  )}
                   
                   {showReplies[entry.id] && entry.replies && entry.replies.length > 0 && (
                     <div className="replies">
                       {entry.replies.map((reply) => (
                         <div key={reply.id} className="reply">
                           <div className="reply-header">
-                            <span>{reply.name}</span>
-                            <span className="entry-datetime">{formatDateTime(reply.timestamp)}</span>
+                            <span className="reply-author">{reply.name}</span>
+                            <span className="reply-datetime">{formatDateTime(reply.timestamp)}</span>
                           </div>
-                          <div>{reply.message}</div>
+                          <div className="reply-message">{reply.message}</div>
                         </div>
                       ))}
                     </div>
