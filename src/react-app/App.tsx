@@ -3,19 +3,30 @@ import { useState, useEffect } from "react";
 import Modal from "./components/Modal";
 import "./App.css";
 
-interface GuestbookEntry {
+interface Reply {
+  id: string;
   name: string;
   message: string;
   timestamp: number;
 }
 
+interface DiscussionEntry {
+  id: string;
+  name: string;
+  message: string;
+  timestamp: number;
+  replies: Reply[];
+}
+
 function App() {
-  const [entries, setEntries] = useState<GuestbookEntry[]>([]);
+  const [entries, setEntries] = useState<DiscussionEntry[]>([]);
   const [guestName, setGuestName] = useState("");
   const [guestMessage, setGuestMessage] = useState("");
+  const [replyInputs, setReplyInputs] = useState<{[key: string]: {name: string, message: string}}>({});
+  const [showReplies, setShowReplies] = useState<{[key: string]: boolean}>({});
 
   useEffect(() => {
-    fetch("/api/guestbook")
+    fetch("/api/discussion")
       .then(res => res.json())
       .then(data => setEntries(data))
       .catch(() => setEntries([]));
@@ -25,19 +36,61 @@ function App() {
     if (!guestName.trim() || !guestMessage.trim()) return;
     
     try {
-      const response = await fetch("/api/guestbook", {
+      const response = await fetch("/api/discussion", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ name: guestName, message: guestMessage })
       });
       
       const newEntry = await response.json();
-      setEntries([...entries, newEntry]);
+      setEntries([newEntry, ...entries]);
       setGuestName("");
       setGuestMessage("");
     } catch (error) {
       console.error('Failed to add entry:', error);
     }
+  };
+
+  const addReply = async (entryId: string) => {
+    const replyData = replyInputs[entryId];
+    if (!replyData?.name.trim() || !replyData?.message.trim()) return;
+    
+    try {
+      const response = await fetch(`/api/discussion/${entryId}/reply`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name: replyData.name, message: replyData.message })
+      });
+      
+      const newReply = await response.json();
+      setEntries(entries.map(entry => 
+        entry.id === entryId 
+          ? { ...entry, replies: [...entry.replies, newReply] }
+          : entry
+      ));
+      setReplyInputs(prev => ({ ...prev, [entryId]: { name: "", message: "" } }));
+    } catch (error) {
+      console.error('Failed to add reply:', error);
+    }
+  };
+
+  const updateReplyInput = (entryId: string, field: 'name' | 'message', value: string) => {
+    setReplyInputs(prev => ({
+      ...prev,
+      [entryId]: {
+        ...prev[entryId],
+        [field]: value
+      }
+    }));
+  };
+
+  const toggleReplies = (entryId: string) => {
+    setShowReplies(prev => ({ ...prev, [entryId]: !prev[entryId] }));
+  };
+
+  const formatDateTime = (timestamp: number) => {
+    const date = new Date(timestamp);
+    return date.toLocaleString();
   };
 
   const lyrics = {
@@ -123,6 +176,7 @@ function App() {
         </div>
         
         <div className="card neo-brutalist">
+          <h3>Discussion</h3>
           <div className="guestbook-form">
             <input
               type="text"
@@ -132,7 +186,7 @@ function App() {
               className="neo-brutalist form-input"
             />
             <textarea
-              placeholder="Leave a message..."
+              placeholder="Start a discussion..."
               value={guestMessage}
               onChange={(e) => setGuestMessage(e.target.value)}
               className="neo-brutalist form-textarea"
@@ -142,15 +196,65 @@ function App() {
               onClick={addEntry}
               className="neo-brutalist submit-btn"
             >
-              Sign Guestbook
+              Post Message
             </button>
           </div>
           <div className="guestbook-entries">
-            {entries.map((entry, index) => (
-              <div key={index} className="neo-brutalist guestbook-entry">
-                <div className="entry-name">{entry.name}</div>
+            {entries.map((entry) => (
+              <div key={entry.id} className="neo-brutalist discussion-entry">
+                <div className="entry-header">
+                  <span className="entry-name">{entry.name}</span>
+                  <span className="entry-datetime">{formatDateTime(entry.timestamp)}</span>
+                </div>
                 <div className="entry-message">{entry.message}</div>
-                <div className="entry-date">{new Date(entry.timestamp).toLocaleDateString()}</div>
+                
+                {entry.replies.length > 0 && (
+                  <button 
+                    onClick={() => toggleReplies(entry.id)}
+                    className="show-replies-btn"
+                  >
+                    {showReplies[entry.id] ? 'Hide' : 'Show'} {entry.replies.length} replies
+                  </button>
+                )}
+                
+                <div className="reply-section">
+                  <div className="reply-form">
+                    <input
+                      type="text"
+                      placeholder="Your name"
+                      value={replyInputs[entry.id]?.name || ''}
+                      onChange={(e) => updateReplyInput(entry.id, 'name', e.target.value)}
+                      className="reply-input"
+                    />
+                    <input
+                      type="text"
+                      placeholder="Reply..."
+                      value={replyInputs[entry.id]?.message || ''}
+                      onChange={(e) => updateReplyInput(entry.id, 'message', e.target.value)}
+                      className="reply-input"
+                    />
+                    <button 
+                      onClick={() => addReply(entry.id)}
+                      className="reply-btn"
+                    >
+                      Reply
+                    </button>
+                  </div>
+                  
+                  {showReplies[entry.id] && (
+                    <div className="replies">
+                      {entry.replies.map((reply) => (
+                        <div key={reply.id} className="reply">
+                          <div className="reply-header">
+                            <span>{reply.name}</span>
+                            <span className="entry-datetime">{formatDateTime(reply.timestamp)}</span>
+                          </div>
+                          <div>{reply.message}</div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
               </div>
             ))}
           </div>
