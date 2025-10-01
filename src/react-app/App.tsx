@@ -28,7 +28,16 @@ function App() {
   useEffect(() => {
     fetch("/api/discussion")
       .then(res => res.json())
-      .then(data => setEntries(data))
+      .then(data => {
+        if (Array.isArray(data)) {
+          setEntries(data.map(entry => ({
+            ...entry,
+            replies: entry.replies || []
+          })));
+        } else {
+          setEntries([]);
+        }
+      })
       .catch(() => setEntries([]));
   }, []);
 
@@ -200,7 +209,7 @@ function App() {
             </button>
           </div>
           <div className="guestbook-entries">
-            {entries.map((entry) => (
+            {entries && entries.length > 0 && entries.map((entry) => (
               <div key={entry.id} className="neo-brutalist discussion-entry">
                 <div className="entry-header">
                   <span className="entry-name">{entry.name}</span>
@@ -208,7 +217,7 @@ function App() {
                 </div>
                 <div className="entry-message">{entry.message}</div>
                 
-                {entry.replies.length > 0 && (
+                {entry.replies && entry.replies.length > 0 && (
                   <button 
                     onClick={() => toggleReplies(entry.id)}
                     className="show-replies-btn"
@@ -241,7 +250,7 @@ function App() {
                     </button>
                   </div>
                   
-                  {showReplies[entry.id] && (
+                  {showReplies[entry.id] && entry.replies && entry.replies.length > 0 && (
                     <div className="replies">
                       {entry.replies.map((reply) => (
                         <div key={reply.id} className="reply">
