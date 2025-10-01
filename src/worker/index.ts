@@ -86,7 +86,7 @@ app.get("/api/discussion", async (c) => {
   const id = c.env.GUESTBOOK.idFromName("guestbook");
   const obj = c.env.GUESTBOOK.get(id);
   const resp = await obj.fetch(new Request("http://localhost/entries"));
-  const data = await resp.json();
+  const data = await resp.json() as DiscussionEntry[];
   return c.json(data);
 });
 
@@ -99,7 +99,7 @@ app.post("/api/discussion", async (c) => {
     body: JSON.stringify(body),
     headers: { "Content-Type": "application/json" }
   }));
-  const data = await resp.json();
+  const data = await resp.json() as DiscussionEntry;
   return c.json(data);
 });
 
@@ -113,7 +113,7 @@ app.post("/api/discussion/:entryId/reply", async (c) => {
     body: JSON.stringify(body),
     headers: { "Content-Type": "application/json" }
   }));
-  const data = await resp.json();
+  const data = await resp.json() as Reply;
   return c.json(data);
 });
 
