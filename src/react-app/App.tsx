@@ -259,14 +259,12 @@ function App() {
       <div className="app-container">
         <div className="content-wrapper">
         <h1 className="title-with-banner">
-          <span className="title-word">AMERICAN</span>
-          <br />
+          <span className="title-word">AM<span style={{display: 'inline-block', transform: 'scaleX(-1)'}}>E</span>RICAN</span>
           <div className="inline-banner">
             {[1,2,3,4,5,6,7].map(i => (
               <img key={i} src={`/spc${i}.png`} className="inline-spectrum-item" alt={`Spectrum ${i}`} />
             ))}
           </div>
-          <br />
           <span className="title-word">SPECTRUM</span>
         </h1>
         <h2>DEMO 25' - SEP 25, 2025</h2>
