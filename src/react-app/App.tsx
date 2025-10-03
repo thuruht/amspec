@@ -77,14 +77,22 @@ function App() {
 
   const addReply = async (entryId: string) => {
     const replyData = replyInputs[entryId];
-    if (!replyData?.name.trim() || !replyData?.message.trim()) return;
+    if (!replyData?.name.trim() || !replyData?.message.trim()) {
+      setError('Please fill in both name and message for reply');
+      return;
+    }
+    
+    setReplyLoading(prev => ({ ...prev, [entryId]: true }));
+    setError(null);
     
     try {
       const response = await fetch(`/api/discussion/${entryId}/reply`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name: replyData.name, message: replyData.message })
+        body: JSON.stringify({ name: replyData.name.trim(), message: replyData.message.trim() })
       });
+      
+      if (!response.ok) throw new Error('Failed to post reply');
       
       const newReply = await response.json();
       setEntries(entries.map(entry => 
@@ -93,8 +101,12 @@ function App() {
           : entry
       ));
       setReplyInputs(prev => ({ ...prev, [entryId]: { name: "", message: "" } }));
+      setShowReplies(prev => ({ ...prev, [entryId]: true }));
     } catch (error) {
+      setError('Failed to post reply. Please try again.');
       console.error('Failed to add reply:', error);
+    } finally {
+      setReplyLoading(prev => ({ ...prev, [entryId]: false }));
     }
   };
 
@@ -339,8 +351,17 @@ function App() {
                           setShowReplyForm(prev => ({ ...prev, [entry.id]: false }));
                         }}
                         className="reply-btn"
+                        disabled={replyLoading[entry.id] || !replyInputs[entry.id]?.name?.trim() || !replyInputs[entry.id]?.message?.trim()}
+                        aria-label="Post your reply"
                       >
-                        Post Reply
+                        {replyLoading[entry.id] ? (
+                          <>
+                            <span className="spinner" aria-hidden="true"></span>
+                            Posting...
+                          </>
+                        ) : (
+                          'Post Reply'
+                        )}
                       </button>
                     </div>
                   )}
