@@ -114,7 +114,8 @@ function App() {
     setReplyInputs(prev => ({
       ...prev,
       [entryId]: {
-        ...prev[entryId],
+        name: prev[entryId]?.name || '',
+        message: prev[entryId]?.message || '',
         [field]: value
       }
     }));
