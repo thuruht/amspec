@@ -32,19 +32,22 @@ function App() {
   const [adminPassword, setAdminPassword] = useState("");
 
   useEffect(() => {
-    fetch("/api/discussion")
-      .then(res => res.json())
-      .then(data => {
-        if (Array.isArray(data)) {
-          setEntries(data.map(entry => ({
-            ...entry,
-            replies: entry.replies || []
-          })));
-        } else {
-          setEntries([]);
-        }
-      })
-      .catch(() => setEntries([]));
+    const timer = setTimeout(() => {
+      fetch("/api/discussion")
+        .then(res => res.json())
+        .then(data => {
+          if (Array.isArray(data)) {
+            setEntries(data.map(entry => ({
+              ...entry,
+              replies: entry.replies || []
+            })));
+          } else {
+            setEntries([]);
+          }
+        })
+        .catch(() => setEntries([]));
+    }, 100);
+    return () => clearTimeout(timer);
   }, []);
 
   const addEntry = async () => {
@@ -261,7 +264,7 @@ function App() {
         <h1>AM<span style={{display: 'inline-block', transform: 'scaleX(-1)'}}>E</span>RICAN SPECTRUM</h1>
         <div className="spectrum-banner">
           {[1,2,3,4,5,6,7].map(i => (
-            <img key={i} src={`/spc${i}.png`} className="spectrum-item" alt={`Spectrum ${i}`} />
+            <img key={i} src={`/spc${i}.png`} className="spectrum-item" alt={`Spectrum ${i}`} loading="lazy" />
           ))}
         </div>
         <h2>DEMO 25' - SEP 25, 2025</h2>
@@ -269,9 +272,9 @@ function App() {
         <div className="card neo-brutalist">
           <div className="album-section">
             <div className="album-art-container">
-              <img src="/spc.png" alt="American Spectrum Album Art" className="neo-brutalist album-art" />
+              <img src="/spc.png" alt="American Spectrum Album Art" className="neo-brutalist album-art" loading="eager" />
             </div>
-            <audio controls className="audio-player neo-brutalist">
+            <audio controls className="audio-player neo-brutalist" preload="metadata">
               <source src="/demo.m4a" type="audio/mp4" />
               Your browser does not support the audio element.
             </audio>

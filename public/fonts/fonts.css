@@ -1,0 +1,31 @@
+@font-face {
+  font-family: 'Black Ops One';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url(/fonts/black-ops-one.woff2) format('woff2');
+}
+
+@font-face {
+  font-family: 'Big Shoulders Stencil Display';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url(/fonts/big-shoulders-400.woff2) format('woff2');
+}
+
+@font-face {
+  font-family: 'Big Shoulders Stencil Display';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url(/fonts/big-shoulders-700.woff2) format('woff2');
+}
+
+@font-face {
+  font-family: 'Special Elite';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url(/fonts/special-elite.woff2) format('woff2');
+}
