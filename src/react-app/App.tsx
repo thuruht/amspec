@@ -330,10 +330,10 @@ function App() {
             <div className="band-section">
               <h3>Band Members</h3>
               <div className="band-grid">
-                <div><strong>Tommy</strong> - Guitar</div>
-                <div><strong>Jacob</strong> - Bass</div>
-                <div><strong>Tony</strong> - Drums</div>
-                <div><strong>Jonah</strong> - Vocals</div>
+                <div><strong className="band-member" style={{color: '#dc2626'}}>Tommy</strong> - Guitar</div>
+                <div><strong className="band-member" style={{color: '#ea580c'}}>Jacob</strong> - Bass</div>
+                <div><strong className="band-member" style={{color: '#ca8a04'}}>Tony</strong> - Drums</div>
+                <div><strong className="band-member" style={{color: '#16a34a'}}>Jonah</strong> - Vocals</div>
               </div>
             </div>
             <div className="credits-section">
