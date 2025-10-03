@@ -25,6 +25,9 @@ function App() {
   const [replyInputs, setReplyInputs] = useState<{[key: string]: {name: string, message: string}}>({});
   const [showReplies, setShowReplies] = useState<{[key: string]: boolean}>({});
   const [showReplyForm, setShowReplyForm] = useState<{[key: string]: boolean}>({});
+  const [loading, setLoading] = useState(false);
+  const [replyLoading, setReplyLoading] = useState<{[key: string]: boolean}>({});
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     fetch("/api/discussion")
@@ -43,21 +46,32 @@ function App() {
   }, []);
 
   const addEntry = async () => {
-    if (!guestName.trim() || !guestMessage.trim()) return;
+    if (!guestName.trim() || !guestMessage.trim()) {
+      setError('Please fill in both name and message');
+      return;
+    }
+    
+    setLoading(true);
+    setError(null);
     
     try {
       const response = await fetch("/api/discussion", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name: guestName, message: guestMessage })
+        body: JSON.stringify({ name: guestName.trim(), message: guestMessage.trim() })
       });
+      
+      if (!response.ok) throw new Error('Failed to post message');
       
       const newEntry = await response.json();
       setEntries([newEntry, ...entries]);
       setGuestName("");
       setGuestMessage("");
     } catch (error) {
+      setError('Failed to post message. Please try again.');
       console.error('Failed to add entry:', error);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -99,13 +113,37 @@ function App() {
   };
 
   const toggleReplyForm = (entryId: string) => {
-    setShowReplyForm(prev => ({ ...prev, [entryId]: !prev[entryId] }));
+    setShowReplyForm(prev => {
+      const newState = { ...prev };
+      // Close all other reply forms
+      Object.keys(newState).forEach(key => {
+        if (key !== entryId) {
+          newState[key] = false;
+        }
+      });
+      // Toggle the clicked one
+      newState[entryId] = !prev[entryId];
+      return newState;
+    });
   };
 
   const formatDateTime = (timestamp: number) => {
     const date = new Date(timestamp);
-    return date.toLocaleString();
+    const now = new Date();
+    const diffMs = now.getTime() - date.getTime();
+    const diffMins = Math.floor(diffMs / 60000);
+    const diffHours = Math.floor(diffMs / 3600000);
+    const diffDays = Math.floor(diffMs / 86400000);
+    
+    if (diffMins < 1) return 'Just now';
+    if (diffMins < 60) return `${diffMins}m ago`;
+    if (diffHours < 24) return `${diffHours}h ago`;
+    if (diffDays < 7) return `${diffDays}d ago`;
+    
+    return date.toLocaleDateString();
   };
+
+  const clearError = () => setError(null);
 
   const lyrics = {
     track1: '[Verse 1]<br>Lorem ipsum dolor sit amet, consectetur adipiscing elit<br>Sed do eiusmod tempor incididunt ut labore et dolore magna<br><br>[Chorus]<br>Aliqua ut enim ad minim veniam, quis nostrud exercitation<br>Ullamco laboris nisi ut aliquip ex ea commodo consequat',
@@ -192,30 +230,58 @@ function App() {
         <div className="card neo-brutalist">
           <h3>Discussion</h3>
           <div className="guestbook-form">
+            {error && (
+              <div className="error-message" role="alert">
+                {error}
+                <button onClick={clearError} className="error-close" aria-label="Close error">
+                  ×
+                </button>
+              </div>
+            )}
             <input
               type="text"
               placeholder="Your name"
               value={guestName}
               onChange={(e) => setGuestName(e.target.value)}
               className="neo-brutalist form-input"
+              maxLength={50}
+              aria-label="Your name"
+              disabled={loading}
             />
-            <textarea
-              placeholder="Start a discussion..."
-              value={guestMessage}
-              onChange={(e) => setGuestMessage(e.target.value)}
-              className="neo-brutalist form-textarea"
-              rows={3}
-            />
+            <div className="textarea-container">
+              <textarea
+                placeholder="Start a discussion..."
+                value={guestMessage}
+                onChange={(e) => setGuestMessage(e.target.value)}
+                className="neo-brutalist form-textarea"
+                rows={3}
+                maxLength={500}
+                aria-label="Your message"
+                disabled={loading}
+              />
+              <div className="char-count">
+                {guestMessage.length}/500
+              </div>
+            </div>
             <button 
               onClick={addEntry}
               className="neo-brutalist submit-btn"
+              disabled={loading || !guestName.trim() || !guestMessage.trim()}
+              aria-label="Post your message"
             >
-              Post Message
+              {loading ? (
+                <>
+                  <span className="spinner" aria-hidden="true"></span>
+                  Posting...
+                </>
+              ) : (
+                'Post Message'
+              )}
             </button>
           </div>
           <div className="guestbook-entries">
-            {entries && entries.length > 0 && entries.map((entry) => (
-              <div key={entry.id} className="neo-brutalist discussion-entry">
+            {entries && entries.length > 0 ? entries.map((entry) => (
+              <article key={entry.id} className="neo-brutalist discussion-entry" data-entry-id={entry.id}>
                 <div className="entry-header">
                   <span className="entry-author">{entry.name}</span>
                   <span className="entry-datetime">{formatDateTime(entry.timestamp)}</span>
@@ -248,14 +314,25 @@ function App() {
                         value={replyInputs[entry.id]?.name || ''}
                         onChange={(e) => updateReplyInput(entry.id, 'name', e.target.value)}
                         className="reply-input"
+                        maxLength={50}
+                        aria-label={`Reply name for ${entry.name}'s message`}
+                        disabled={replyLoading[entry.id]}
                       />
-                      <input
-                        type="text"
-                        placeholder="Your message"
-                        value={replyInputs[entry.id]?.message || ''}
-                        onChange={(e) => updateReplyInput(entry.id, 'message', e.target.value)}
-                        className="reply-input reply-message"
-                      />
+                      <div className="reply-message-container">
+                        <input
+                          type="text"
+                          placeholder="Your message"
+                          value={replyInputs[entry.id]?.message || ''}
+                          onChange={(e) => updateReplyInput(entry.id, 'message', e.target.value)}
+                          className="reply-input reply-message"
+                          maxLength={300}
+                          aria-label={`Reply message for ${entry.name}'s message`}
+                          disabled={replyLoading[entry.id]}
+                        />
+                        <div className="reply-char-count">
+                          {(replyInputs[entry.id]?.message || '').length}/300
+                        </div>
+                      </div>
                       <button 
                         onClick={() => {
                           addReply(entry.id);
@@ -282,8 +359,12 @@ function App() {
                     </div>
                   )}
                 </div>
+              </article>
+            )) : (
+              <div className="empty-state">
+                <p>No discussions yet. Be the first to start a conversation!</p>
               </div>
-            ))}
+            )}
           </div>
         </div>
         
