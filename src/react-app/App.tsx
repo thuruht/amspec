@@ -339,7 +339,7 @@ function App() {
             <div className="credits-section">
               <h3>Production</h3>
               <div className="credits">
-                <div><strong>Recorded by Aidan Stutzman</strong></div>
+                <div><strong>Recorded by<br />Aidan Stutzman</strong></div>
                 <div><strong>@ Nam Studios</strong></div>
                 <div>Sep 25, 2025</div>
               </div>

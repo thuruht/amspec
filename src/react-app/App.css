@@ -59,7 +59,7 @@ h1 {
   text-align: center;
   text-transform: uppercase;
   color: #000;
-  background: rgba(255, 255, 255, 0.9);
+  background: rgba(255, 255, 255, 0.75);
   padding: clamp(0.5rem, 2vw, 1rem);
   text-shadow: 
     3px 3px 0 rgba(255,0,0,0.5),
@@ -73,7 +73,7 @@ h2 {
   font-size: clamp(1.25rem, 4vw, 2rem);
   text-align: center;
   color: #dc2626;
-  background: rgba(255, 255, 255, 0.9);
+  background: rgba(255, 255, 255, 0.75);
   padding: clamp(0.5rem, 2vw, 1rem);
   text-shadow: 2px 2px 0 rgba(0,0,0,0.2);
   margin-bottom: clamp(1rem, 3vw, 2rem);
@@ -335,7 +335,8 @@ button:focus-visible {
 /* Band and Credits Combined */
 .band-credits {
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
+  justify-content: space-between;
   gap: 2rem;
 }
 
@@ -346,7 +347,7 @@ button:focus-visible {
 }
 
 .credits {
-  text-align: center;
+  text-align: left;
   font-size: 0.875rem;
   display: flex;
   flex-direction: column;
@@ -354,7 +355,7 @@ button:focus-visible {
 }
 
 .credits-section {
-  text-align: center;
+  text-align: left;
 }
 
 
@@ -464,14 +465,12 @@ button:focus-visible {
     font-size: 1rem;
   }
   
-  .band-credits {
-    flex-direction: row;
-    justify-content: space-between;
+  .credits-section {
+    text-align: center;
   }
   
-  .band-section,
-  .credits-section {
-    flex: 1;
+  .credits {
+    text-align: center;
   }
 }
 
@@ -769,7 +768,7 @@ textarea:focus-visible {
 
 .reply-author {
   font-weight: bold;
-  color: #495057;
+  color: #dc2626;
 }
 
 .reply-datetime {
