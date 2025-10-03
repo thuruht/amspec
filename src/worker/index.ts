@@ -50,9 +50,29 @@ export class GuestbookDO {
     }
     
     if (request.method === "DELETE" && url.pathname.startsWith("/entries/")) {
-      const entryId = url.pathname.split("/")[2];
-      const entries = (await this.state.storage.get("entries")) as DiscussionEntry[] || [];
+      const pathParts = url.pathname.split("/");
+      const entryId = pathParts[2];
       
+      // Delete reply: /entries/{entryId}/replies/{replyId}
+      if (pathParts.length === 5 && pathParts[3] === "replies") {
+        const replyId = pathParts[4];
+        const entries = (await this.state.storage.get("entries")) as DiscussionEntry[] || [];
+        
+        const entryIndex = entries.findIndex(e => e.id === entryId);
+        if (entryIndex === -1) {
+          return new Response("Entry not found", { status: 404 });
+        }
+        
+        entries[entryIndex].replies = entries[entryIndex].replies.filter(r => r.id !== replyId);
+        await this.state.storage.put("entries", entries);
+        
+        return new Response(JSON.stringify({ success: true }), {
+          headers: { "Content-Type": "application/json" }
+        });
+      }
+      
+      // Delete entry: /entries/{entryId}
+      const entries = (await this.state.storage.get("entries")) as DiscussionEntry[] || [];
       const filteredEntries = entries.filter(e => e.id !== entryId);
       await this.state.storage.put("entries", filteredEntries);
       
@@ -139,6 +159,23 @@ app.delete("/api/discussion/:entryId", async (c) => {
   const id = c.env.GUESTBOOK.idFromName("guestbook");
   const obj = c.env.GUESTBOOK.get(id);
   const resp = await obj.fetch(new Request(`http://localhost/entries/${entryId}`, {
+    method: "DELETE"
+  }));
+  const data = await resp.json() as { success: boolean };
+  return c.json(data);
+});
+
+app.delete("/api/discussion/:entryId/reply/:replyId", async (c) => {
+  const password = c.req.header("X-Admin-Password");
+  if (password !== c.env.ADMIN_PASSWORD) {
+    return c.json({ error: "Unauthorized" }, 401);
+  }
+  
+  const entryId = c.req.param("entryId");
+  const replyId = c.req.param("replyId");
+  const id = c.env.GUESTBOOK.idFromName("guestbook");
+  const obj = c.env.GUESTBOOK.get(id);
+  const resp = await obj.fetch(new Request(`http://localhost/entries/${entryId}/replies/${replyId}`, {
     method: "DELETE"
   }));
   const data = await resp.json() as { success: boolean };

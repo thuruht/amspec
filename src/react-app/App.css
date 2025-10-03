@@ -45,30 +45,34 @@ body::before {
 
 /* Typography */
 h1 {
-  font-family: 'Impact', 'Arial Black', sans-serif;
-  font-weight: 900;
-  letter-spacing: clamp(3px, 0.8vw, 6px);
-  font-size: clamp(2rem, 8vw, 5rem);
+  font-family: 'Special Elite', 'Courier New', monospace;
+  font-weight: 400;
+  letter-spacing: clamp(2px, 0.5vw, 4px);
+  font-size: clamp(1.75rem, 6vw, 4.5rem);
   margin-bottom: 1rem;
   text-align: center;
   text-transform: uppercase;
-  -webkit-text-stroke: 2px #000;
-  color: #fff;
+  color: #1a1a1a;
   text-shadow: 
-    3px 3px 0 rgba(0,0,0,0.8),
-    6px 6px 0 rgba(0,0,0,0.6),
-    9px 9px 0 rgba(0,0,0,0.4);
+    2px 2px 0 rgba(255,0,0,0.3),
+    4px 4px 0 rgba(0,0,0,0.2);
+  line-height: 1.2;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
 }
 
 .title-with-banner {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 1rem;
+  gap: clamp(0.75rem, 2vw, 1rem);
+  flex-wrap: wrap;
+  max-width: 100%;
 }
 
 .title-word {
-  white-space: nowrap;
+  white-space: normal;
+  word-break: break-word;
 }
 
 .inline-banner {

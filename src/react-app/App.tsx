@@ -181,6 +181,31 @@ function App() {
     }
   };
 
+  const deleteReply = async (entryId: string, replyId: string) => {
+    if (!confirm('Are you sure you want to delete this reply?')) return;
+    
+    try {
+      const response = await fetch(`/api/discussion/${entryId}/reply/${replyId}`, {
+        method: "DELETE",
+        headers: { "X-Admin-Password": adminPassword }
+      });
+      
+      if (!response.ok) {
+        setError('Failed to delete reply.');
+        return;
+      }
+      
+      setEntries(entries.map(entry => 
+        entry.id === entryId 
+          ? { ...entry, replies: entry.replies.filter(r => r.id !== replyId) }
+          : entry
+      ));
+    } catch (error) {
+      setError('Failed to delete reply.');
+      console.error('Failed to delete reply:', error);
+    }
+  };
+
   const toggleAdminMode = () => {
     if (!adminMode) {
       const pass = prompt('Enter admin password:');
@@ -444,7 +469,26 @@ function App() {
                         <div key={reply.id} className="reply">
                           <div className="reply-header">
                             <span className="reply-author">{reply.name}</span>
-                            <span className="reply-datetime">{formatDateTime(reply.timestamp)}</span>
+                            <div style={{display: 'flex', gap: '0.5rem', alignItems: 'center'}}>
+                              <span className="reply-datetime">{formatDateTime(reply.timestamp)}</span>
+                              {adminMode && (
+                                <button
+                                  onClick={() => deleteReply(entry.id, reply.id)}
+                                  style={{
+                                    padding: '0.2rem 0.4rem',
+                                    background: '#dc2626',
+                                    color: 'white',
+                                    border: 'none',
+                                    borderRadius: '3px',
+                                    cursor: 'pointer',
+                                    fontSize: '0.7rem'
+                                  }}
+                                  aria-label="Delete reply"
+                                >
+                                  Delete
+                                </button>
+                              )}
+                            </div>
                           </div>
                           <div className="reply-message">{reply.message}</div>
                         </div>
