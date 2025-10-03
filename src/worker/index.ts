@@ -49,6 +49,18 @@ export class GuestbookDO {
       });
     }
     
+    if (request.method === "DELETE" && url.pathname.startsWith("/entries/")) {
+      const entryId = url.pathname.split("/")[2];
+      const entries = (await this.state.storage.get("entries")) as DiscussionEntry[] || [];
+      
+      const filteredEntries = entries.filter(e => e.id !== entryId);
+      await this.state.storage.put("entries", filteredEntries);
+      
+      return new Response(JSON.stringify({ success: true }), {
+        headers: { "Content-Type": "application/json" }
+      });
+    }
+    
     if (request.method === "POST" && url.pathname.startsWith("/entries/") && url.pathname.endsWith("/replies")) {
       const entryId = url.pathname.split("/")[2];
       const body = await request.json() as { name: string; message: string };
@@ -78,7 +90,7 @@ export class GuestbookDO {
   }
 }
 
-const app = new Hono<{ Bindings: Env & { GUESTBOOK: DurableObjectNamespace } }>();
+const app = new Hono<{ Bindings: Env & { GUESTBOOK: DurableObjectNamespace; ADMIN_PASSWORD: string } }>();
 
 app.get("/api/", (c) => c.json({ name: "Cloudflare" }));
 
@@ -114,6 +126,22 @@ app.post("/api/discussion/:entryId/reply", async (c) => {
     headers: { "Content-Type": "application/json" }
   }));
   const data: Reply = await resp.json();
+  return c.json(data);
+});
+
+app.delete("/api/discussion/:entryId", async (c) => {
+  const password = c.req.header("X-Admin-Password");
+  if (password !== c.env.ADMIN_PASSWORD) {
+    return c.json({ error: "Unauthorized" }, 401);
+  }
+  
+  const entryId = c.req.param("entryId");
+  const id = c.env.GUESTBOOK.idFromName("guestbook");
+  const obj = c.env.GUESTBOOK.get(id);
+  const resp = await obj.fetch(new Request(`http://localhost/entries/${entryId}`, {
+    method: "DELETE"
+  }));
+  const data = await resp.json() as { success: boolean };
   return c.json(data);
 });
 

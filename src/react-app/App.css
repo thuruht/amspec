@@ -686,8 +686,8 @@ button:not(:disabled):active {
 }
 
 .reply-form {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
+  display: flex;
+  flex-direction: column;
   gap: 0.75rem;
   margin-bottom: 1rem;
   padding: 1rem;
@@ -697,7 +697,7 @@ button:not(:disabled):active {
 
 .reply-message-container {
   position: relative;
-  grid-column: 1 / -1;
+  width: 100%;
 }
 
 .reply-char-count {
@@ -729,11 +729,11 @@ button:not(:disabled):active {
 }
 
 .reply-message {
-  grid-column: 1 / -1;
+  width: 100%;
 }
 
 .reply-btn {
-  grid-column: 1 / -1;
+  width: 100%;
   padding: 0.75rem 1.5rem;
   background: #dc2626;
   color: white;

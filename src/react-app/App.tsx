@@ -28,6 +28,8 @@ function App() {
   const [loading, setLoading] = useState(false);
   const [replyLoading, setReplyLoading] = useState<{[key: string]: boolean}>({});
   const [error, setError] = useState<string | null>(null);
+  const [adminMode, setAdminMode] = useState(false);
+  const [adminPassword, setAdminPassword] = useState("");
 
   useEffect(() => {
     fetch("/api/discussion")
@@ -158,6 +160,40 @@ function App() {
 
   const clearError = () => setError(null);
 
+  const deleteEntry = async (entryId: string) => {
+    if (!confirm('Are you sure you want to delete this comment?')) return;
+    
+    try {
+      const response = await fetch(`/api/discussion/${entryId}`, {
+        method: "DELETE",
+        headers: { "X-Admin-Password": adminPassword }
+      });
+      
+      if (!response.ok) {
+        setError('Failed to delete. Check admin password.');
+        return;
+      }
+      
+      setEntries(entries.filter(e => e.id !== entryId));
+    } catch (error) {
+      setError('Failed to delete comment.');
+      console.error('Failed to delete entry:', error);
+    }
+  };
+
+  const toggleAdminMode = () => {
+    if (!adminMode) {
+      const pass = prompt('Enter admin password:');
+      if (pass) {
+        setAdminPassword(pass);
+        setAdminMode(true);
+      }
+    } else {
+      setAdminMode(false);
+      setAdminPassword("");
+    }
+  };
+
   const lyrics = {
     track1: '[Verse 1]<br>Lorem ipsum dolor sit amet, consectetur adipiscing elit<br>Sed do eiusmod tempor incididunt ut labore et dolore magna<br><br>[Chorus]<br>Aliqua ut enim ad minim veniam, quis nostrud exercitation<br>Ullamco laboris nisi ut aliquip ex ea commodo consequat',
     track2: '[Verse 1]<br>Occaecat cupidatat non proident, sunt in culpa qui officia<br>Deserunt mollit anim id est laborum sed ut perspiciatis<br><br>[Chorus]<br>Unde omnis iste natus error sit voluptatem accusantium<br>Doloremque laudantium, totam rem aperiam eaque ipsa',
@@ -241,7 +277,23 @@ function App() {
         </div>
         
         <div className="card neo-brutalist">
-          <h3>Discussion</h3>
+          <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem'}}>
+            <h3 style={{margin: 0}}>Discussion</h3>
+            <button 
+              onClick={toggleAdminMode}
+              style={{
+                padding: '0.5rem 1rem',
+                background: adminMode ? '#dc2626' : '#666',
+                color: 'white',
+                border: 'none',
+                borderRadius: '4px',
+                cursor: 'pointer',
+                fontSize: '0.8rem'
+              }}
+            >
+              {adminMode ? '🔓 Admin Mode' : '🔒 Admin'}
+            </button>
+          </div>
           <div className="guestbook-form">
             {error && (
               <div className="error-message" role="alert">
@@ -297,7 +349,26 @@ function App() {
               <article key={entry.id} className="neo-brutalist discussion-entry" data-entry-id={entry.id}>
                 <div className="entry-header">
                   <span className="entry-author">{entry.name}</span>
-                  <span className="entry-datetime">{formatDateTime(entry.timestamp)}</span>
+                  <div style={{display: 'flex', gap: '1rem', alignItems: 'center'}}>
+                    <span className="entry-datetime">{formatDateTime(entry.timestamp)}</span>
+                    {adminMode && (
+                      <button
+                        onClick={() => deleteEntry(entry.id)}
+                        style={{
+                          padding: '0.25rem 0.5rem',
+                          background: '#dc2626',
+                          color: 'white',
+                          border: 'none',
+                          borderRadius: '4px',
+                          cursor: 'pointer',
+                          fontSize: '0.75rem'
+                        }}
+                        aria-label="Delete comment"
+                      >
+                        Delete
+                      </button>
+                    )}
+                  </div>
                 </div>
                 <div className="entry-message">{entry.message}</div>
                 
