@@ -31,9 +31,14 @@ body::before {
   left: 0;
   right: 0;
   bottom: 0;
-  background: 
-    repeating-linear-gradient(45deg, transparent, transparent 10px, rgba(0,0,0,.03) 10px, rgba(0,0,0,.03) 20px),
-    repeating-linear-gradient(-45deg, transparent, transparent 10px, rgba(0,0,0,.03) 10px, rgba(0,0,0,.03) 20px);
+  background-image: url('/specbg.png');
+  background-image: image-set(
+    url('/specbg.webp') type('image/webp'),
+    url('/specbg.png') type('image/png')
+  );
+  background-repeat: repeat;
+  background-size: 632px;
+  opacity: 0.5;
   z-index: -1;
   pointer-events: none;
 }
@@ -111,7 +116,7 @@ h3 {
 
 /* Card Component */
 .card {
-  background: white;
+  background: #ffffffe8;
   padding: clamp(1rem, 4vw, 2rem);
   word-wrap: break-word;
   overflow-wrap: break-word;
@@ -147,7 +152,7 @@ h3 {
 }
 
 .tracklist {
-  background: white;
+  background: #ffffffe8;
   padding: 1rem;
 }
 
@@ -364,7 +369,7 @@ button:focus-visible {
 }
 
 .modal-content {
-  background: white;
+  background: #ffffffe8;
   padding: 2rem;
   max-width: 32rem;
   width: 100%;
@@ -590,7 +595,7 @@ textarea:focus-visible {
 .discussion-entry {
   margin-bottom: clamp(1rem, 3vw, 1.5rem);
   padding: clamp(1rem, 3vw, 1.5rem);
-  background: #fff;
+  background: #ffffffe8;
   border-radius: 8px;
   box-shadow: 0 2px 4px rgba(0,0,0,0.1);
   word-wrap: break-word;
