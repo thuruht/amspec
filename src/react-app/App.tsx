@@ -264,11 +264,6 @@ function App() {
             <img key={i} src={`/spc${i}.png`} className="spectrum-item" alt={`Spectrum ${i}`} />
           ))}
         </div>
-        <div className="spectrum-banner">
-          {[1,2,3,4,5,6,7].map(i => (
-            <img key={i} src={`/spc${i}.png`} className="spectrum-item" alt={`Spectrum ${i}`} />
-          ))}
-        </div>
         <h2>DEMO 25' - SEP 25, 2025</h2>
         
         <div className="card neo-brutalist">
@@ -280,6 +275,25 @@ function App() {
               <source src="/demo.m4a" type="audio/mp4" />
               Your browser does not support the audio element.
             </audio>
+            <a 
+              href="https://www.youtube.com/watch?v=x8OvR8VVcUA" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              style={{
+                display: 'block',
+                marginTop: '1rem',
+                padding: '0.75rem',
+                background: '#dc2626',
+                color: 'white',
+                textDecoration: 'none',
+                textAlign: 'center',
+                borderRadius: '4px',
+                fontWeight: 'bold',
+                border: '2px solid #000'
+              }}
+            >
+              Watch on YouTube
+            </a>
           </div>
         </div>
         
