@@ -32,6 +32,13 @@ export class GuestbookDO {
       });
     }
     
+    if (request.method === "DELETE" && url.pathname === "/entries") {
+      await this.state.storage.delete("entries");
+      return new Response(JSON.stringify({ success: true, message: "All entries cleared" }), {
+        headers: { "Content-Type": "application/json" }
+      });
+    }
+    
     if (request.method === "POST" && url.pathname === "/entries") {
       const body = await request.json() as { name: string; message: string };
       const entries = (await this.state.storage.get("entries")) as DiscussionEntry[] || [];
@@ -179,6 +186,21 @@ app.delete("/api/discussion/:entryId/reply/:replyId", async (c) => {
     method: "DELETE"
   }));
   const data = await resp.json() as { success: boolean };
+  return c.json(data);
+});
+
+app.delete("/api/discussion", async (c) => {
+  const password = c.req.header("X-Admin-Password");
+  if (password !== c.env.ADMIN_PASSWORD) {
+    return c.json({ error: "Unauthorized" }, 401);
+  }
+  
+  const id = c.env.GUESTBOOK.idFromName("guestbook");
+  const obj = c.env.GUESTBOOK.get(id);
+  const resp = await obj.fetch(new Request(`http://localhost/entries`, {
+    method: "DELETE"
+  }));
+  const data = await resp.json() as { success: boolean; message: string };
   return c.json(data);
 });
 

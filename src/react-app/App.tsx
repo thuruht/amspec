@@ -219,6 +219,33 @@ function App() {
     }
   };
 
+  const clearAllEntries = async () => {
+    if (!confirm('Are you sure you want to delete ALL comments? This cannot be undone!')) return;
+    
+    const confirmPassword = prompt('Enter admin password again to confirm:');
+    if (confirmPassword !== adminPassword) {
+      setError('Password confirmation failed.');
+      return;
+    }
+    
+    try {
+      const response = await fetch('/api/discussion', {
+        method: "DELETE",
+        headers: { "X-Admin-Password": adminPassword }
+      });
+      
+      if (!response.ok) {
+        setError('Failed to clear all. Check admin password.');
+        return;
+      }
+      
+      setEntries([]);
+    } catch (error) {
+      setError('Failed to clear all comments.');
+      console.error('Failed to clear all:', error);
+    }
+  };
+
   const lyrics = {
     track1: '[Verse 1]<br>Lorem ipsum dolor sit amet, consectetur adipiscing elit<br>Sed do eiusmod tempor incididunt ut labore et dolore magna<br><br>[Chorus]<br>Aliqua ut enim ad minim veniam, quis nostrud exercitation<br>Ullamco laboris nisi ut aliquip ex ea commodo consequat',
     track2: '[Verse 1]<br>Occaecat cupidatat non proident, sunt in culpa qui officia<br>Deserunt mollit anim id est laborum sed ut perspiciatis<br><br>[Chorus]<br>Unde omnis iste natus error sit voluptatem accusantium<br>Doloremque laudantium, totam rem aperiam eaque ipsa',
@@ -302,22 +329,40 @@ function App() {
         </div>
         
         <div className="card neo-brutalist">
-          <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem'}}>
+          <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem', flexWrap: 'wrap', gap: '0.5rem'}}>
             <h3 style={{margin: 0}}>Discussion</h3>
-            <button 
-              onClick={toggleAdminMode}
-              style={{
-                padding: '0.5rem 1rem',
-                background: adminMode ? '#dc2626' : '#666',
-                color: 'white',
-                border: 'none',
-                borderRadius: '4px',
-                cursor: 'pointer',
-                fontSize: '0.8rem'
-              }}
-            >
-              {adminMode ? '🔓 Admin Mode' : '🔒 Admin'}
-            </button>
+            <div style={{display: 'flex', gap: '0.5rem'}}>
+              {adminMode && (
+                <button 
+                  onClick={clearAllEntries}
+                  style={{
+                    padding: '0.5rem 1rem',
+                    background: '#991b1b',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '4px',
+                    cursor: 'pointer',
+                    fontSize: '0.8rem'
+                  }}
+                >
+                  Clear All
+                </button>
+              )}
+              <button 
+                onClick={toggleAdminMode}
+                style={{
+                  padding: '0.5rem 1rem',
+                  background: adminMode ? '#dc2626' : '#666',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '4px',
+                  cursor: 'pointer',
+                  fontSize: '0.8rem'
+                }}
+              >
+                {adminMode ? '🔓 Admin Mode' : '🔒 Admin'}
+              </button>
+            </div>
           </div>
           <div className="guestbook-form">
             {error && (
